@@ -58,8 +58,11 @@ const ColorPanels = (props: any) => {
         className={`color-panel top-panel ${props.selectedId == 0 ? 'selected' : ''}`}
         style={{ backgroundColor: props.colored ? (props.colored[0] > 0) ? colors[0] : 'grey' : colors[0] }}
         onClick={() => {
+          if(props.market) {
+
           props.setRequestId(props.requests[0])
           props.setPrice(props.prices[0])
+          }
 
           if(props.colored&&props.colored[0] > 0) handlePanelClick(0)
               else if(!props.colored)  handlePanelClick(0)
@@ -72,10 +75,11 @@ const ColorPanels = (props: any) => {
             className={`color-panel ${props.selectedId === index + 1 ? 'selected' : ''} ${props.selectedId !== null && props.selectedId !== index + 1 ? 'greyed-out' : ''}`}
             style={{ backgroundColor: props.colored ?  props.colored.slice(1,props.colored.length-1)[index] > 0 ? color : 'grey' : color}}
             onClick={() => {
-              console.log(props.requests)
-              props.setRequestId(props.requests.slice(1,props.requests.length-1)[index])
-              props.setPrice(props.prices.slice(1,props.prices.length-1)[index])
-              console.log(props.requests.slice(1,props.requests.length-1)[index])
+              if(props.market) {
+                props.setRequestId(props.requests.slice(1,props.requests.length-1)[index])
+                props.setPrice(props.prices.slice(1,props.prices.length-1)[index])
+              }
+
               if(props.colored&&props.colored.slice(1,props.colored.length-1)[index] > 0) handlePanelClick(index + 1)
               else if(!props.colored)  handlePanelClick(index + 1)
             }}
