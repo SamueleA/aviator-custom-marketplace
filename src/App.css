@@ -1,16 +1,15 @@
 .App {
   text-align: center;
   background-image: url('./sky_blue_clouds.png');
-  height: 100vh;
   background-repeat: no-repeat;
   background-size: cover;
+  height: 100vmin;
 }
 
-body {
+/* body {
   font-family:'Times New Roman', Times, serif;
-}
+} */
 .App-logo {
-  height: 40vmin;
   pointer-events: none;
 }
 
@@ -31,10 +30,6 @@ body {
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
-}
-
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
@@ -42,10 +37,6 @@ body {
   to {
     transform: rotate(360deg);
   }
-}
-
-button {
-  margin: 10px;
 }
 
 /* .split-flap {
@@ -63,7 +54,7 @@ button {
 
 .ticker {
   padding-top: 5px !important;
-  width: 30px;
+  width: 34px;
   font-size: 20px;
   /* padding: 10px; */
 }
@@ -99,6 +90,11 @@ button {
   border-radius: 5px;
   cursor: pointer;
   transition: box-shadow 0.3s ease;
+  display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: lightblue;
 }
 
 .selected {
