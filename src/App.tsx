@@ -26,65 +26,12 @@ function BasicDateTimePicker(props: any) {
     onChange={(value) => {
       console.log(value)
       const epochTime = Date.parse(value!.toString()); // Convert milliseconds to seconds
-    // console.log(epochTime);console.log(value);onChange(value)
-    // let myDate = value
-      console.log(epochTime)
-// Adding 2 hours
-// myDate.setHours(myDate.getHours() + 2);
-
-// Adding 30 minutes
-// myDate.setMinutes(myDate.getMinutes() + 30);
-props.setExpiry(epochTime)
-onChange(value)
+      props.setExpiry(epochTime)
+      onChange(value)
   }} value={value} />
   );
 }
-// const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; // Characters to iterate through
 
-// const SplitFlapDisplay = ({ names }: any) => {
-//   const [currentName, setCurrentName] = useState('');
-//   const [displayedName, setDisplayedName] = useState('');
-//   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 '.split('');
-
-//   useEffect(() => {
-//     const flipThroughCharacters = (nameIndex: any, charIndex: any) => {
-//       if (nameIndex >= names.length) return;
-
-//       const targetName = names[nameIndex].toUpperCase();
-//       const nextCharIndex = (charIndex + 1) % (targetName.length + 1);
-//       const nextNameIndex = nextCharIndex === 0 ? nameIndex + 1 : nameIndex;
-
-//       let nextDisplayedName = displayedName;
-//       if (charIndex < targetName.length) {
-//         const targetChar = targetName[charIndex];
-//         const charPos = characters.indexOf(targetChar);
-//         let currentCharIndex = characters.indexOf(nextDisplayedName[charIndex] || ' ') + 1;
-//         if (currentCharIndex >= characters.length) currentCharIndex = 0; // Loop back to the start
-//         nextDisplayedName = nextDisplayedName.substring(0, charIndex) +
-//                              characters[currentCharIndex] +
-//                              nextDisplayedName.substring(charIndex + 1);
-
-//         if (characters[currentCharIndex] === targetChar) {
-//           setTimeout(() => flipThroughCharacters(nextNameIndex, nextCharIndex), 1000); // Wait before flipping the next character
-//         } else {
-//           setTimeout(() => flipThroughCharacters(nameIndex, charIndex), 50); // Speed of character flipping
-//         }
-//       } else {
-//         setTimeout(() => flipThroughCharacters(nextNameIndex, nextCharIndex), 1000); // Wait before starting the next name
-//       }
-
-//       setDisplayedName(nextDisplayedName.padEnd(targetName.length, ' ')); // Pad the displayed name to match the target length
-//     };
-
-//     flipThroughCharacters(0, 0);
-//   }, [names]);
-
-//   return (
-//     <div className="split-flap-display">
-//       {displayedName}
-//     </div>
-//   );
-// };
 
 const ColorPanels = (props: any) => {
   const colors = [
@@ -96,9 +43,6 @@ const ColorPanels = (props: any) => {
     'rgba(0, 0, 255, 0.65)', // blue
     'rgba(75, 0, 130, 0.65)', // indigo
   ].reverse()
-
-  // const colors = ['red', 'orange', 'lightblue', 'green','yellow',,'blue', 'indigo'];
-
 
   const handlePanelClick = (id: any) => {
     props.setSelectedId(id); // Update the selected panel ID
@@ -210,7 +154,6 @@ function App() {
       // return order
       requestList[order.tokenId] = order.orderId
     })
-    console.log(object)
     setTopOrders(object)
     setRequests(Object.values(requestList))
     }, 0)
@@ -222,7 +165,6 @@ function App() {
 
     if(details.connected){
       setLoggedIn(true)
-      //  new TickerBoard('.create-ticker')
     }
   }
 
@@ -318,15 +260,13 @@ function App() {
     console.log(res)
   }
 
-  const aircraftNames = ['AVIATOR', "HANGAR!"];
-  // const [flipBoard, setFlipBoard] = useState<any>()
+  const aircraftNames = ['AVIATOR', "HANGAR"];
   const [balance, setBalance] = useState({})
   const [quantity, setQuantity] = useState(null)
   const [price, setPrice] = useState(null)
   const [expiry, setExpiry] = useState(null)
 
   useEffect(() => {
-
 
     setTimeout(async () => {
       const indexer = new SequenceIndexer('https://polygon-indexer.sequence.app', 'c3bgcU3LkFR9Bp9jFssLenPAAAAAAAAAA')
@@ -358,54 +298,6 @@ function App() {
 
       setBalance(object)
     }, 0)
-
-//     console.log('creating ticker')
-//     // setFlipBoard(null)
-//     // var listItems = document.querySelectorAll('li');
-
-//     // // Remove each <li> element
-//     // listItems.forEach(function(item: any) {
-//     //   item.parentNode.removeChild(item);
-//     console.log(view)
-//     // view ==0 && setFlipBoard(<div className='parent'>
-
-//     //             {<ul className="create-ticker">
-//     //                   <li style={{paddingTop: '20px !important'}}>{"MINT"}</li>
-//     //               </ul>}
-//     //               </div>)
-
-//     if(view ==1) flipBoard = <div className='parent'>
-
-//                 {<ul className="create-ticker-1">
-//                       <li style={{paddingTop: '20px !important'}}>{"MARKET"}</li>
-//                   </ul>}
-//                   </div>
-
-//      if(view ==2) flipBoard = <div className='parent'>
-
-//      {<ul className="create-ticker-1">
-//            <li style={{paddingTop: '20px !important'}}>{"SELL"}</li>
-//        </ul>}
-//        </div>
-// if(view ==2){
-
-// document.getElementById('create-ticker-1')
-// const board = new Board(element)
-// board.updateMessages(['Apple', 'Banana', 'Cherry'])
-// }
-
-
-//     if(view ==0) flipBoard = <div className='parent'>
-
-//     {<ul className="create-ticker-2">
-//           <li style={{paddingTop: '20px !important'}}>{"MINT"}</li>
-//       </ul>}
-//       </div>
-//     // });    
-
-//     new TickerBoard('.create-ticker')
-//     new TickerBoard('.create-ticker-1')
-//     new TickerBoard('.create-ticker-2')
   }, [view])
 
   return (
@@ -536,8 +428,7 @@ function App() {
                     <Box marginTop="5" marginBottom="4">
                       <br/>
                       <Text variant="normal" color="text80">
-                        Enter your email to recieve a code to login{!true ? ` and create your wallet` : null }. Please check your spam folder if you don't see it
-                        in your inbox.
+                        Enter your listing in USDC
                       </Text> 
                       <br/>
                       <br/>
