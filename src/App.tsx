@@ -107,7 +107,7 @@ function App() {
 
   useEffect(() => {
     // new TickerBoard('.create-ticker')
-    setTimeout(async ()=>{
+    setInterval(async ()=>{
       const res = await fetch('https://dev-marketplace-api.sequence.app/polygon/rpc/Marketplace/GetTopOrders', {
         method: 'POST',
         headers: {
@@ -176,7 +176,7 @@ function App() {
     setTopOrders(object)
     setRequests(Object.values(requestList))
     setPrices(Object.values(prices))
-    }, 0)
+    }, 5000)
   }, [loggedIn])
 
   const connect = async () => {
@@ -216,7 +216,7 @@ function App() {
     try {
       const res = await signer.sendTransaction([txApprove,tx])
       console.log(res)
-
+      setSelectedId(null)
     }catch(err){
     }
   }
@@ -225,9 +225,9 @@ function App() {
     const wallet = sequence.getWallet()
     const signer = wallet.getSigner(137)
     const erc1155Interface = new ethers.utils.Interface(["function mint(address to, uint256 tokenId, uint256 amount, bytes data) returns ()"])
-
+    console.log(selectedId)
     const data = erc1155Interface.encodeFunctionData(
-      'mint', [await wallet.getAddress(),selectedId,,"0x00"]
+      'mint', [await wallet.getAddress(),selectedId,1,"0x00"]
     )
 
     const tx = {
@@ -283,6 +283,8 @@ function App() {
     try {
       const res = await signer.sendTransaction([txApprove,tx])
       console.log(res)
+      toggleModal(false)
+      setView(2)
     }catch(err){
       console.log(err)
     }
@@ -328,6 +330,89 @@ function App() {
     }, 0)
   }, [view])
 
+  const [isViewOrderbook, setIsViewOrderbook] = useState(false)
+  const [orderbookListings, setOrderbookListings] = useState([])
+
+  const viewOrderbook = async () => {
+    setIsViewOrderbook(!isViewOrderbook)
+  }
+
+  useEffect(() => {
+    setTimeout(async () => {
+      if(isViewOrderbook){
+        const res = await fetch('https://dev-marketplace-api.sequence.app/polygon/rpc/Marketplace/GetOrderbookOrders', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+              "collectionAddress": "0x1693ffc74edbb50d6138517fe5cd64fd1c917709",
+              "currencyAddresses": ["0x2791bca1f2de4661ed88a30c99a7a9449aa84174", "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619"],
+              "orderbookContractAddress": "0xB537a160472183f2150d42EB1c3DD6684A55f74c",
+              "tokenIDs": [selectedId
+              ],
+              "isListing": true,
+              "priceSort": "DESC"
+          })
+      });
+      const result = await res.json()
+      console.log(result)
+      const listings: any = []
+      result.orders.map((order: any) => {
+        if(order.tokenId == selectedId){
+          listings.push(order)
+        }
+      })
+
+      setOrderbookListings(listings)
+      }
+    }, 0)
+  }, [isViewOrderbook])
+
+  const [cardId, setCardId] = useState(null)
+
+  const handleCardId = async (id: any) => {
+    console.log(id)
+    if(id == cardId) setCardId(null)
+    else setCardId(id)
+  }
+
+  const fillOrderSpecific = async () => {
+    const sequenceMarketInterface = new ethers.utils.Interface(SequenceMarketABI.abi)
+    const wallet = await sequence.getWallet()
+    const signer = await wallet.getSigner(137)
+    console.log(requestId)
+    const data = sequenceMarketInterface.encodeFunctionData(
+      'acceptRequest', [requestId, 1, await wallet.getAddress(), [],[]]
+    )
+
+    const erc20Interface = new ethers.utils.Interface(["function approve(address spender, uint256 amount) public returns (bool)"])
+
+    const dataApprove = erc20Interface.encodeFunctionData(
+      'approve', ["0xB537a160472183f2150d42EB1c3DD6684A55f74c",Number(price)*10**6]
+    )
+
+    const txApprove = {
+      to: "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
+      data: dataApprove
+    }
+
+    const tx = {
+      to: "0xB537a160472183f2150d42EB1c3DD6684A55f74c",
+      data: data
+    }
+
+    try {
+      const res = await signer.sendTransaction([txApprove,tx])
+      console.log(res)
+    }catch(err){
+    }
+  }
+
+  useEffect(() => {
+
+  }, [cardId])
+
   return (
     <div className="App">
       {
@@ -370,14 +455,37 @@ function App() {
                   theme={'dark'}
                 />
               </div>
-              <p style={{color: 'black', fontFamily: 'circular'}}>✈️ request the top order</p>
+              {
+                !isViewOrderbook ? 
+                <p style={{color: 'black', fontFamily: 'circular'}}>✈️ request the top order</p>
+                :
+                <p style={{color: 'black', fontFamily: 'circular'}}>✈️ find a specific order</p>
+              }
 
-                <Box justifyContent={'center'}>
+                {!isViewOrderbook ? <Box justifyContent={'center'}>
                   <ColorPanels setPrice={setPrice} prices={prices} requests={requests} setRequestId={setRequestId} market={true} colored={Object.values(topOrders)} setSelectedId={setSelectedId} selectedId={selectedId}/>
-                </Box> 
+                </Box> : <>
+                <Box>
+                  <div className='parent'>
+                  <div style={{width: '400px'}}>
+                    {orderbookListings.map((order: any, index: any) => {
+                      return <Card style={{cursor: 'pointer', border: cardId == index?'1px solid lightblue' : ''}} onClick={() => {setRequestId(order.orderId); setPrice(order.pricePerToken); handleCardId(index)}}>
+                        <span>orderId: {order.orderId}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <span>tokenId: {order.tokenId}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <span>${order.pricePerToken}</span>
+                      </Card>
+                    })}
+                  </div>
+                  </div>
+
+                </Box>
+                </> }
+
+                <br/>
                 <Box justifyContent={'center'}>
-                  <Button disabled={selectedId == null} padding={"4"} label="fulfill order" onClick={() => fillOrder()}></Button>
-                  <Button disabled={selectedId == null} padding={"4"} label="view orderbook" onClick={() => createOrder()}></Button>
+                {!isViewOrderbook ?  <Button disabled={selectedId == null} padding={"4"} label="fulfill order" onClick={() => fillOrder()}></Button> :  <Button disabled={cardId == null} padding={"4"} label="fulfill order" onClick={() => fillOrderSpecific()}></Button> }
+                 
+                  {!isViewOrderbook ? <Button disabled={selectedId == null} padding={"4"} label="view orderbook" onClick={() => viewOrderbook()}></Button> : <Button disabled={selectedId == null} padding={"4"} label="back" onClick={() => viewOrderbook()}></Button> }
                 </Box>  
               </>
             :
