@@ -209,8 +209,12 @@ function App() {
       data: data
     }
 
-    const res = await signer.sendTransaction([txApprove,tx])
-    console.log(res)
+    try {
+      const res = await signer.sendTransaction([txApprove,tx])
+      console.log(res)
+
+    }catch(err){
+    }
   }
 
   const mint = async () => {
@@ -272,8 +276,12 @@ function App() {
       data: dataApprove
     }
 
-    const res = await signer.sendTransaction([txApprove,tx])
-    console.log(res)
+    try {
+      const res = await signer.sendTransaction([txApprove,tx])
+      console.log(res)
+    }catch(err){
+      console.log(err)
+    }
   }
 
   const aircraftNames = ['AVIATOR', "HANGAR"];
