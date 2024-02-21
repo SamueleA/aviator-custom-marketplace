@@ -58,6 +58,9 @@ const ColorPanels = (props: any) => {
         className={`color-panel top-panel ${props.selectedId == 0 ? 'selected' : ''}`}
         style={{ backgroundColor: props.colored ? (props.colored[0] > 0) ? colors[0] : 'grey' : colors[0] }}
         onClick={() => {
+          props.setRequestId(props.requests[0])
+          props.setPrice(props.prices[0])
+
           if(props.colored&&props.colored[0] > 0) handlePanelClick(0)
               else if(!props.colored)  handlePanelClick(0)
         }}
@@ -71,6 +74,7 @@ const ColorPanels = (props: any) => {
             onClick={() => {
               console.log(props.requests)
               props.setRequestId(props.requests.slice(1,props.requests.length-1)[index])
+              props.setPrice(props.prices.slice(1,props.prices.length-1)[index])
               console.log(props.requests.slice(1,props.requests.length-1)[index])
               if(props.colored&&props.colored.slice(1,props.colored.length-1)[index] > 0) handlePanelClick(index + 1)
               else if(!props.colored)  handlePanelClick(index + 1)
@@ -93,6 +97,7 @@ function App() {
   const [isOpen, toggleModal] = useState(false)
   const [requestId, setRequestId] = useState(null)
   const [requests, setRequests] = useState([])
+  const [prices, setPrices] = useState([])
 
   sequence.initWallet("AQAAAAAAAAfalbPQnQhGI9F68UTWT9RyHlM",{defaultNetwork: 'polygon'})
 
@@ -144,6 +149,15 @@ function App() {
       5: 0,
       6: 0
     }
+    const prices: any = {
+      0: 0,
+      1: 0,
+      2: 0,
+      3: 0,
+      4: 0,
+      5: 0,
+      6: 0
+    }
     result.orders.map(async (order: any) => {
       console.log('in this loop')
       object[order.tokenId] = Number(order.pricePerToken)
@@ -153,9 +167,11 @@ function App() {
       // order.image = json[0].image
       // return order
       requestList[order.tokenId] = order.orderId
+      prices[order.tokenId] = Number(order.pricePerToken)
     })
     setTopOrders(object)
     setRequests(Object.values(requestList))
+    setPrices(Object.values(prices))
     }, 0)
   }, [loggedIn])
 
@@ -180,7 +196,7 @@ function App() {
     const erc20Interface = new ethers.utils.Interface(["function approve(address spender, uint256 amount) public returns (bool)"])
 
     const dataApprove = erc20Interface.encodeFunctionData(
-      'approve', ["0xB537a160472183f2150d42EB1c3DD6684A55f74c",1*10**6]
+      'approve', ["0xB537a160472183f2150d42EB1c3DD6684A55f74c",Number(price)*10**6]
     )
 
     const txApprove = {
@@ -203,7 +219,7 @@ function App() {
     const erc1155Interface = new ethers.utils.Interface(["function mint(address to, uint256 tokenId, uint256 amount, bytes data) returns ()"])
 
     const data = erc1155Interface.encodeFunctionData(
-      'mint', [await wallet.getAddress(),selectedId,1,"0x00"]
+      'mint', [await wallet.getAddress(),selectedId,,"0x00"]
     )
 
     const tx = {
@@ -345,7 +361,7 @@ function App() {
               <p style={{color: 'black', fontFamily: 'circular'}}>✈️ request the top order</p>
 
                 <Box justifyContent={'center'}>
-                  <ColorPanels requests={requests} setRequestId={setRequestId} market={true} colored={Object.values(topOrders)} setSelectedId={setSelectedId} selectedId={selectedId}/>
+                  <ColorPanels setPrice={setPrice} prices={prices} requests={requests} setRequestId={setRequestId} market={true} colored={Object.values(topOrders)} setSelectedId={setSelectedId} selectedId={selectedId}/>
                 </Box> 
                 <Box justifyContent={'center'}>
                   <Button disabled={selectedId == null} padding={"4"} label="fulfill order" onClick={() => fillOrder()}></Button>
@@ -372,23 +388,6 @@ function App() {
               </>
             } 
             <br/>
-            {/* <Box justifyContent={'center'}>
-              <div style={{width: '400px', height: '400px'}}>
-                {
-                  topOrders.map((order: any) => {
-                    if(order.tokenContract) return <Card>
-                      contract: {order.tokenContract!.slice(0,8)}...
-                      <br/>
-                      <br/>
-                      expiry: {new Date(order.expiry * 1000).toUTCString()}
-                      <br/>
-                      <br/>
-                      <img src={order.image} width={'120px'}/>
-                    </Card>
-                  })
-                }
-              </div>
-            </Box> */}
           </>
         :
         <>
@@ -396,7 +395,7 @@ function App() {
           <br/>
           <div className="parent">
           <TickerBoard
-              messages={['AVIATOR', "HANGAR!"]}
+              messages={['AVIATOR', "HANGAR"]}
               count={2}
               size={7}
               theme={'dark'}
@@ -424,7 +423,6 @@ function App() {
                   height="full"
                   padding="16"
                 >
-
                     <Box marginTop="5" marginBottom="4">
                       <br/>
                       <Text variant="normal" color="text80">
@@ -435,16 +433,6 @@ function App() {
                       <BasicDateTimePicker setExpiry={setExpiry}/>
                       <br/>
                       <br/>
-                      {/* struct RequestParams {
-                          bool isListing; // True if the request is a listing, false if it is an offer.
-                          bool isERC1155; // True if the token is an ERC1155 token, false if it is an ERC721 token.
-                          address tokenContract;
-                          uint256 tokenId;
-                          uint256 quantity;
-                          uint96 expiry;
-                          address currency;
-                          uint256 pricePerToken;
-                        } */}
                       <TextInput placeholder="quantity" onChange={(value: any) => setQuantity(value.target.value)}/>
                       <br/>
                       <TextInput placeholder="price" onChange={(value: any) => setPrice(value.target.value)}/>
