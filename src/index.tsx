@@ -8,9 +8,9 @@ import '@0xsequence/design-system/styles.css'
 import { KitProvider } from '@0xsequence/kit'
 import { getDefaultConnectors } from '@0xsequence/kit-connectors'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { createConfig, http, WagmiProvider, WagmiConfig } from 'wagmi'
-// import { createConfig} from '@wagmi/core'
+import { createConfig, http, WagmiProvider } from 'wagmi'
 import { mainnet, polygon, Chain } from 'wagmi/chains'
+import { Transport } from 'viem'
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -30,7 +30,7 @@ function Dapp() {
     projectAccessKey
   })
 
-  const transports: any = {}
+  const transports: Record<number, Transport> = {}
 
   chains.forEach(chain => {
     transports[chain.id] = http()
@@ -40,10 +40,10 @@ function Dapp() {
     transports,
     chains,
     connectors
-  } as any)
+  })
 
   return (
-    <WagmiConfig config={config}>
+    <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}> 
         <KitProvider config={{}}>
         <ThemeProvider>
@@ -51,7 +51,7 @@ function Dapp() {
         </ThemeProvider>
         </KitProvider>
       </QueryClientProvider>
-    </WagmiConfig>
+    </WagmiProvider>
   );
 }
 
