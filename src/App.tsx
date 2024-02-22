@@ -23,6 +23,9 @@ import plane4 from './planes/Raptor_Fury_X2.png'
 import plane5 from './planes/Skyraider_Z-11_Onyx.png'
 import plane6 from './planes/Thunderbolt_XR-5_Cobalt.png'
 
+import { useOpenConnectModal } from '@0xsequence/kit'
+import { useDisconnect, useAccount } from 'wagmi'
+
 const planePanels = [plane1,plane2,plane3,plane4,plane5,plane6]
 
 function BasicDateTimePicker(props: any) {
@@ -96,7 +99,8 @@ function App() {
   const [requestId, setRequestId] = useState(null)
   const [requests, setRequests] = useState([])
   const [prices, setPrices] = useState([])
-
+  const { setOpenConnectModal } = useOpenConnectModal()
+  const { isConnected } = useAccount()
   const metadata: any = [
     ["Falcon Mark IV Redtail", "A sleek, high-speed interceptor with a gleaming scarlet finish."],
     ["Hawkwind P-22 Emerald", "A nimble, versatile fighter with a striking, metallic emerald green coat."],
@@ -182,13 +186,17 @@ function App() {
     }, 0)
   }, [loggedIn])
 
+  useEffect(() => {
+    if(isConnected) setLoggedIn(true)
+  }, [])
   const connect = async () => {
-    const wallet = sequence.getWallet()
-    const details = await wallet.connect({app: 'sequence-market-feed'})
+    setOpenConnectModal(true)
+    // const wallet = sequence.getWallet()
+    // const details = await wallet.connect({app: 'sequence-market-feed'})
 
-    if(details.connected){
-      setLoggedIn(true)
-    }
+    // if(details.connected){
+      // setLoggedIn(true)
+    // }
   }
 
   const fillOrder = async () => {
@@ -581,9 +589,9 @@ function App() {
                       <BasicDateTimePicker setExpiry={setExpiry}/>
                       <br/>
                       <br/>
-                      <TextInput placeholder="quantity" onChange={(value: any) => setQuantity(value.target.value)}/>
+                      <TextInput  name="" placeholder="quantity" onChange={(value: any) => setQuantity(value.target.value)}/>
                       <br/>
-                      <TextInput placeholder="price" onChange={(value: any) => setPrice(value.target.value)}/>
+                      <TextInput  name="" placeholder="price" onChange={(value: any) => setPrice(value.target.value)}/>
                       <br/>
                       <Box justifyContent={'center'}>
                         <Button disabled={selectedId == null} padding={"4"} label="submit" onClick={() => createOrder()}></Button>
