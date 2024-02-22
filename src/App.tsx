@@ -2,9 +2,7 @@ import React, {useEffect, useState} from 'react';
 import logo from './logo.svg';
 import './App.css';
 import {sequence} from '0xsequence'
-import { Button, Box, Card, Text, Modal,useTheme, TextInput } from '@0xsequence/design-system';
-import pathHud from './path_hud.png'
-import plane from './plane.png'
+import { Button, Box, Card, Text, Modal,useTheme, TextInput, GradientAvatar } from '@0xsequence/design-system';
 import {ethers} from 'ethers'
 //@ts-ignore
 import TickerBoard from './TickerBoard'
@@ -17,7 +15,15 @@ import 'react-datetime-picker/dist/DateTimePicker.css';
 import 'react-calendar/dist/Calendar.css';
 import 'react-clock/dist/Clock.css';
 import DateTimePicker from 'react-datetime-picker';
-import { request } from 'http';
+
+import plane1 from './planes/Falcon_Mark_IV_Redtail.png'
+import plane2 from './planes/Hawkwind_P-22_Emerald.png'
+import plane3 from './planes/Lightning_Spectre_G6.png'
+import plane4 from './planes/Raptor_Fury_X2.png'
+import plane5 from './planes/Skyraider_Z-11_Onyx.png'
+import plane6 from './planes/Thunderbolt_XR-5_Cobalt.png'
+
+const planePanels = [plane1,plane2,plane3,plane4,plane5,plane6]
 
 function BasicDateTimePicker(props: any) {
   const [value, onChange] = useState<any>(new Date());
@@ -32,12 +38,12 @@ function BasicDateTimePicker(props: any) {
   );
 }
 
-
 const ColorPanels = (props: any) => {
+  // for loading
   const colors = [
     'rgba(255, 0, 0, 0.65)', // red
     'rgba(255, 165, 0, 0.65)', // orange
-    'rgba(173, 216, 230, 0.65)', // orange
+    'rgba(173, 216, 230, 0.65)', // blue
     'rgba(0, 128, 0, 0.65)', // green
     'rgba(255, 255, 0, 0.65)', // yellow
     'rgba(0, 0, 255, 0.65)', // blue
@@ -46,44 +52,30 @@ const ColorPanels = (props: any) => {
 
   const handlePanelClick = (id: any) => {
     props.setSelectedId(id); // Update the selected panel ID
-    console.log(`Selected panel ID: ${id}`); // Log the ID or perform other actions as needed
   };
 
   useEffect(() => {
-    console.log(props.colored)
   }, [props.selectedId])
   return (
     <div className="panel-container">
-      <div
-        className={`color-panel top-panel ${props.selectedId == 0 ? 'selected' : ''}`}
-        style={{ backgroundColor: props.colored ? (props.colored[0] > 0) ? colors[0] : 'grey' : colors[0] }}
-        onClick={() => {
-          if(props.market) {
-
-          props.setRequestId(props.requests[0])
-          props.setPrice(props.prices[0])
-          }
-
-          if(props.colored&&props.colored[0] > 0) handlePanelClick(0)
-              else if(!props.colored)  handlePanelClick(0)
-        }}
-      >{props.market == true && props.colored &&props.colored[0] > 0 && props.colored[0]}</div>
       <div className="grid-container">
         {colors.slice(1).map((color, index) => (
           <div
             key={index}
             className={`color-panel ${props.selectedId === index + 1 ? 'selected' : ''} ${props.selectedId !== null && props.selectedId !== index + 1 ? 'greyed-out' : ''}`}
-            style={{ backgroundColor: props.colored ?  props.colored.slice(1,props.colored.length-1)[index] > 0 ? color : 'grey' : color}}
+            style={{ backgroundImage: props.colored && props.colored.slice(1,props.colored.length-1)[index] > 0 ? `url(${planePanels[index]})` : '', backgroundColor: props.colored ?  props.colored.slice(1,props.colored.length-1)[index] > 0 ? color : 'grey' : color}}
             onClick={() => {
               if(props.market) {
                 props.setRequestId(props.requests.slice(1,props.requests.length-1)[index])
                 props.setPrice(props.prices.slice(1,props.prices.length-1)[index])
               }
-
+              props.setPlane && props.setPlane(planePanels[index])
               if(props.colored&&props.colored.slice(1,props.colored.length-1)[index] > 0) handlePanelClick(index + 1)
               else if(!props.colored)  handlePanelClick(index + 1)
             }}
-          >{props.market == true && props.colored &&props.colored.slice(1,props.colored.length-1)[index] > 0 && props.colored.slice(1,props.colored.length-1)[index]}</div>
+          >
+            {props.market == true && props.colored &&props.colored.slice(1,props.colored.length)[index] > 0 && props.colored.slice(1,props.colored.length)[index]}
+            <span style={{fontSize: '10px'}}>{props.names && props.names[index] && props.names[index][0]}</span></div>
         ))}
       </div>
     </div>
@@ -93,7 +85,9 @@ const ColorPanels = (props: any) => {
 let flipBoard: any = null
 function App() {
   const {setTheme} = useTheme()
+
   setTheme('light')
+
   const [loggedIn, setLoggedIn] = useState(false)
   const [topOrders, setTopOrders] = useState([0,0,0,0,0,0,0])
   const [selectedId, setSelectedId] = useState(null); // Track the selected panel
@@ -103,11 +97,20 @@ function App() {
   const [requests, setRequests] = useState([])
   const [prices, setPrices] = useState([])
 
+  const metadata: any = [
+    ["Falcon Mark IV Redtail", "A sleek, high-speed interceptor with a gleaming scarlet finish."],
+    ["Hawkwind P-22 Emerald", "A nimble, versatile fighter with a striking, metallic emerald green coat."],
+    ["Lightning Spectre G6", "A ghostly, agile aircraft with a unique, shimmering silver hue that seems to fade in and out of visibility."],
+    ["Raptor Fury X2", "A fast and furious dogfighter with a fiery, vibrant orange livery, striking fear into the hearts of its adversaries."],
+    ["Skyraider Z-11 Onyx", "A fearsome, all-black night fighter known for its stealth and power."],
+    ["Thunderbolt XR-5 Cobalt", "A robust, heavy fighter painted in a deep, vivid cobalt blue."],
+     ]
+
   sequence.initWallet("AQAAAAAAAAfalbPQnQhGI9F68UTWT9RyHlM",{defaultNetwork: 'polygon'})
 
   useEffect(() => {
     // new TickerBoard('.create-ticker')
-    setInterval(async ()=>{
+    setTimeout(async ()=>{
       const res = await fetch('https://dev-marketplace-api.sequence.app/polygon/rpc/Marketplace/GetTopOrders', {
         method: 'POST',
         headers: {
@@ -176,7 +179,7 @@ function App() {
     setTopOrders(object)
     setRequests(Object.values(requestList))
     setPrices(Object.values(prices))
-    }, 5000)
+    }, 0)
   }, [loggedIn])
 
   const connect = async () => {
@@ -193,6 +196,8 @@ function App() {
     const wallet = await sequence.getWallet()
     const signer = await wallet.getSigner(137)
 
+    console.log(requestId)
+    console.log(price)
     const data = sequenceMarketInterface.encodeFunctionData(
       'acceptRequest', [requestId, 1, await wallet.getAddress(), [],[]]
     )
@@ -282,7 +287,6 @@ function App() {
 
     try {
       const res = await signer.sendTransaction([txApprove,tx])
-      console.log(res)
       toggleModal(false)
       setView(2)
     }catch(err){
@@ -295,23 +299,23 @@ function App() {
   const [quantity, setQuantity] = useState(null)
   const [price, setPrice] = useState(null)
   const [expiry, setExpiry] = useState(null)
+  const [walletAddress,setWalletAddress] = useState<any>(null)
+  const [plane,setPlane] = useState<any>(null)
 
   useEffect(() => {
 
     setTimeout(async () => {
       const indexer = new SequenceIndexer('https://polygon-indexer.sequence.app', 'c3bgcU3LkFR9Bp9jFssLenPAAAAAAAAAA')
 
-      // try any account address you'd like :)
       const wallet = sequence.getWallet()
       const accountAddress = await wallet.getAddress()
       
-      // query Sequence Indexer for all token balances of the account on Polygon
       const tokenBalances = await indexer.getTokenBalances({
         accountAddress: accountAddress,
         contractAddress: '0x1693ffc74edbb50d6138517fe5cd64fd1c917709',
         includeMetadata: true
       })
-      console.log('tokens in your account:', tokenBalances)
+
       const object: any = {
         0: 0,
         1: 0,
@@ -333,8 +337,9 @@ function App() {
   const [isViewOrderbook, setIsViewOrderbook] = useState(false)
   const [orderbookListings, setOrderbookListings] = useState([])
 
-  const viewOrderbook = async () => {
-    setIsViewOrderbook(!isViewOrderbook)
+  const viewOrderbook = async (fromTab = false) => {
+    if(fromTab) setIsViewOrderbook(false)
+    else setIsViewOrderbook(!isViewOrderbook)
   }
 
   useEffect(() => {
@@ -356,7 +361,7 @@ function App() {
           })
       });
       const result = await res.json()
-      console.log(result)
+
       const listings: any = []
       result.orders.map((order: any) => {
         if(order.tokenId == selectedId){
@@ -381,7 +386,7 @@ function App() {
     const sequenceMarketInterface = new ethers.utils.Interface(SequenceMarketABI.abi)
     const wallet = await sequence.getWallet()
     const signer = await wallet.getSigner(137)
-    console.log(requestId)
+
     const data = sequenceMarketInterface.encodeFunctionData(
       'acceptRequest', [requestId, 1, await wallet.getAddress(), [],[]]
     )
@@ -419,9 +424,8 @@ function App() {
         loggedIn ? 
           <>
           <br/>
-          <br/>
           <span onClick={() => {setView(0);setSelectedId(null);}} style={{cursor: 'pointer', fontFamily: 'circular', color: 'black', paddingBottom: '5px', borderBottom: `${view == 0 ? '1' : '0'}px solid black`, display: 'inline-block'}}>mint</span>
-          &nbsp;&nbsp;&nbsp;&nbsp;<span onClick={() => {setView(1);setSelectedId(null);}} style={{fontFamily: 'circular', cursor: 'pointer', color: 'black', paddingBottom: '5px', borderBottom: `${view == 1 ? '1' : '0'}px solid black`, display: 'inline-block'}}>market</span>
+          &nbsp;&nbsp;&nbsp;&nbsp;<span onClick={() => {setView(1);setSelectedId(null);viewOrderbook(true);}} style={{fontFamily: 'circular', cursor: 'pointer', color: 'black', paddingBottom: '5px', borderBottom: `${view == 1 ? '1' : '0'}px solid black`, display: 'inline-block'}}>market</span>
           &nbsp;&nbsp;&nbsp;&nbsp;<span onClick={() => {setView(2);setSelectedId(null);}} style={{fontFamily: 'circular', cursor: 'pointer', color: 'black', paddingBottom: '5px', borderBottom: `${view == 2 ? '1' : '0'}px solid black`, display: 'inline-block'}}>sell</span>
           {
               view == 0 
@@ -437,8 +441,10 @@ function App() {
             </div>
                 <p style={{color: 'black', fontFamily: 'circular'}}>✈️ choose your plane color</p>
                 <Box justifyContent={'center'}>
-                  <ColorPanels setSelectedId={setSelectedId} selectedId={selectedId}/>
+                  <ColorPanels names={metadata} colored={[1,1,1,1,1,1,1,1]}setSelectedId={setSelectedId} selectedId={selectedId}/>
                 </Box> 
+                <p style={{fontFamily: 'circular'}}>{selectedId && metadata[selectedId!-1][1]}</p>
+                <br/>
                 <Box justifyContent={'center'}>
                   <Button disabled={selectedId == null} padding={"4"} label="mint" onClick={() => mint()}></Button>
                 </Box>
@@ -463,30 +469,52 @@ function App() {
               }
 
                 {!isViewOrderbook ? <Box justifyContent={'center'}>
-                  <ColorPanels setPrice={setPrice} prices={prices} requests={requests} setRequestId={setRequestId} market={true} colored={Object.values(topOrders)} setSelectedId={setSelectedId} selectedId={selectedId}/>
+                  <ColorPanels setPlane={setPlane} setPrice={setPrice} prices={prices} requests={requests} setRequestId={setRequestId} market={true} colored={Object.values(topOrders)} setSelectedId={setSelectedId} selectedId={selectedId}/>
                 </Box> : <>
                 <Box>
                   <div className='parent'>
-                  <div style={{width: '400px'}}>
+                    <br/>
+                    <div className='color-panel selected' style={{backgroundImage: `url(${plane})`}} />
+                    <br/>
+                  <div style={{width: '740px'}}>
                     {orderbookListings.map((order: any, index: any) => {
-                      return <Card style={{cursor: 'pointer', border: cardId == index?'1px solid lightblue' : ''}} onClick={() => {setRequestId(order.orderId); setPrice(order.pricePerToken); handleCardId(index)}}>
-                        <span>orderId: {order.orderId}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        <span>tokenId: {order.tokenId}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        <span>${order.pricePerToken}</span>
-                      </Card>
+                      return <Card
+                      style={{
+                        cursor: 'pointer',
+                        border: cardId === index ? '1px solid lightblue' : '',
+                        display: 'flex',            // Set display to flex
+                        alignItems: 'center',       // Center items horizontally
+                        justifyContent: 'center',   // Center items vertically
+                      }}
+                      onClick={() => {
+                        setRequestId(order.orderId);
+                        setPrice(order.pricePerToken);
+                        setPlane(planePanels[selectedId!-1]);
+                        setWalletAddress(order.creatorAddress);
+                        handleCardId(index);
+                      }}
+                    >
+                      <span><GradientAvatar address={order.createdBy} /></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                      <span> {order.createdBy}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                      <span>orderId: {order.orderId}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                      <span>tokenId: {order.tokenId}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                      <span>${order.pricePerToken}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    </Card>
+                    
                     })}
                   </div>
                   </div>
-
                 </Box>
                 </> }
-
                 <br/>
+                <br/>
+                <br/>
+                <div style={{position: 'fixed', bottom: '30px', left: '41vw'}}>
                 <Box justifyContent={'center'}>
                 {!isViewOrderbook ?  <Button disabled={selectedId == null} padding={"4"} label="fulfill order" onClick={() => fillOrder()}></Button> :  <Button disabled={cardId == null} padding={"4"} label="fulfill order" onClick={() => fillOrderSpecific()}></Button> }
-                 
                   {!isViewOrderbook ? <Button disabled={selectedId == null} padding={"4"} label="view orderbook" onClick={() => viewOrderbook()}></Button> : <Button disabled={selectedId == null} padding={"4"} label="back" onClick={() => viewOrderbook()}></Button> }
                 </Box>  
+                </div>
               </>
             :
               <>
@@ -530,7 +558,7 @@ function App() {
           <br/>
         </>
       }
-            <AnimatePresence>
+        <AnimatePresence>
         {
 
           isOpen 
@@ -564,8 +592,7 @@ function App() {
                 </Box>
             </Modal>
         }
-
-          </AnimatePresence>
+        </AnimatePresence>
     </div>
   );
 }
